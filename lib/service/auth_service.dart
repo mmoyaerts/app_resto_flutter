@@ -1,3 +1,5 @@
+import 'package:http/http.dart' as http;
+
 // À compléter avec la logique d'appel HTTP (package 'http' ou 'dio')
 class AuthService {
   // TODO: Définir l'URL de base de votre API [cite: 34]
