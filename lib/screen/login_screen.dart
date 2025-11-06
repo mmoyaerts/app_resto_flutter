@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_text_field.dart';
 import '../service/auth_service.dart'; // Import du service pour la connexion
 import 'create_account_screen.dart'; // Import de l'écran de destination
-
-
-//A voir
-import 'MenuPage.dart'; // Import de l'écran d'accueil (pour la navigation après succès)
+import 'main_screen.dart'; // NOUVEL IMPORT : MainScreen est l'écran d'accueil complet
 
 
 class LoginScreen extends StatefulWidget {
@@ -27,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implémenter la logique de connexion (email/mot de passe minimum)
+      // TODO: Implémenter la logique de connexion (email/mot de passe minimum) [cite: 102]
       final authService = AuthService();
       final String? token = await authService.login(
         _emailController.text,
@@ -39,12 +36,12 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (token != null) { // Si un token est reçu, la connexion est réussie
-        print('Connexion réussie: Naviguer vers l\'écran d\'accueil');
+        print('Connexion réussie: Naviguer vers l\'écran d\'accueil (MainScreen)');
 
         // TODO: Naviguer vers l'écran d'accueil ou de menu
-        // Utilisation de pushReplacement pour empêcher le retour à l'écran de connexion
+        // CHANGEMENT ICI : Navigation vers MainScreen qui contient la NavBar et MenuPage
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MenuPage()),
+          MaterialPageRoute(builder: (context) => const MainScreen(title: 'Restaurant App')),
         );
       } else {
         // Afficher une erreur

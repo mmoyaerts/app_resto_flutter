@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_text_field.dart';
-// Note : Vous devrez ajuster cet import si le nom de votre projet n'est pas 'resto_app'
-// import 'package:resto_app/service/auth_service.dart';
+import '../service/auth_service.dart'; // Import du service pour la création de compte
+
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -23,17 +23,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         _isLoading = true;
       });
 
-      // TODO[cite: 102]: Implémenter la logique de création de compte (email/mot de passe minimum)
-      // Ex: final authService = AuthService();
-      // Ex: final success = await authService.register(_emailController.text, _passwordController.text);
-
-      await Future.delayed(const Duration(seconds: 1)); // Simulation d'appel API
+      // TODO: Implémenter la logique de création de compte (email/mot de passe minimum) [cite: 102]
+      final authService = AuthService();
+      final success = await authService.register(
+        _emailController.text,
+        _passwordController.text,
+      );
 
       setState(() {
         _isLoading = false;
       });
 
-      if (true) { // Remplacez 'true' par la réponse réelle de l'API
+      if (success) { // Si l'inscription est réussie
         print('Compte créé : Naviguer vers l\'écran de connexion');
         // Afficher un message de succès
         ScaffoldMessenger.of(context).showSnackBar(
@@ -43,7 +44,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       } else {
         // Afficher une erreur
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de la création du compte.')),
+          const SnackBar(content: Text('Erreur lors de la création du compte. Cet email est peut-être déjà utilisé.')),
         );
       }
     }
