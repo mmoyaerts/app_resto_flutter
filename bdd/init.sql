@@ -1,7 +1,6 @@
 CREATE DATABASE restaurant;
 
--- Connexion à la base
-\c restaurant;
+\c restaurant
 -- --------------------
 -- Table rôles
 -- --------------------
