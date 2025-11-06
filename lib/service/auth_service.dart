@@ -7,7 +7,10 @@ class AuthService {
 
   /// Tente de connecter l'utilisateur et retourne le token JWT en cas de succès.
   Future<String?> login(String email, String password) async {
-    final response = await http.post(
+    if (email == 'toto@gmail.com' && password == '1234') {
+      return 'fake-jwt-token'; // token fictif
+    }
+    /*final response = await http.post(
       Uri.parse('$_baseUrl/login'), // Endpoint API de connexion [cite: 26]
       body: {'email': email, 'password': password},
       // Headers pour JSON si nécessaire
@@ -17,7 +20,7 @@ class AuthService {
       // TODO: Parser la réponse pour extraire le Token (JWT)
       // return jsonDecode(response.body)['token'];
       return 'fake-jwt-token';
-    } else {
+    } */else {
       // Gérer les erreurs (identifiants invalides, etc.)
       return null;
     }

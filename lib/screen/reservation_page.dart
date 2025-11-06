@@ -13,13 +13,9 @@ class ReservationPage extends StatefulWidget {
 class _ReservationPageState extends State<ReservationPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  int _numberOfPeople = 1;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime now = DateTime.now();
@@ -31,9 +27,7 @@ class _ReservationPageState extends State<ReservationPage> {
       locale: const Locale('fr', 'FR'),
     );
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      setState(() => _selectedDate = picked);
     }
   }
 
@@ -44,9 +38,7 @@ class _ReservationPageState extends State<ReservationPage> {
       initialTime: now,
     );
     if (picked != null) {
-      setState(() {
-        _selectedTime = picked;
-      });
+      setState(() => _selectedTime = picked);
     }
   }
 
@@ -59,16 +51,13 @@ class _ReservationPageState extends State<ReservationPage> {
     }
 
     setState(() => _isSubmitting = true);
-
-    // Simuler un envoi au serveur
     await Future.delayed(const Duration(seconds: 2));
-
     setState(() => _isSubmitting = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Réservation confirmée le ${_selectedDate!.day}/${_selectedDate!.month} à ${_selectedTime!.format(context)}',
+          'Réservation confirmée le ${_selectedDate!.day}/${_selectedDate!.month} à ${_selectedTime!.format(context)} pour $_numberOfPeople personne(s).',
         ),
       ),
     );
@@ -77,6 +66,7 @@ class _ReservationPageState extends State<ReservationPage> {
     setState(() {
       _selectedDate = null;
       _selectedTime = null;
+      _numberOfPeople = 1;
     });
   }
 
@@ -91,95 +81,114 @@ class _ReservationPageState extends State<ReservationPage> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Réserver une table'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: auth.isLoggedIn
-            ? Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-              const Text('Choisissez votre date :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                onPressed: () => _selectDate(context),
-                icon: const Icon(Icons.calendar_today),
-                label: Text(
-                  _selectedDate == null
-                      ? 'Sélectionner une date'
-                      : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+      body: auth.isLoggedIn
+          ? SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'Choisissez votre date :',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              const Text('Choisissez votre heure :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                onPressed: () => _selectTime(context),
-                icon: const Icon(Icons.access_time),
-                label: Text(
-                  _selectedTime == null
-                      ? 'Sélectionner une heure'
-                      : _selectedTime!.format(context),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  onPressed: () => _selectDate(context),
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(
+                    _selectedDate == null
+                        ? 'Sélectionner une date'
+                        : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              const Text('Commentaire :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _commentController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Exemple : Je veux une table en terrasse...',
-                  border: OutlineInputBorder(),
+                const Text(
+                  'Choisissez votre heure :',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-              ),
-              const SizedBox(height: 30),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  onPressed: () => _selectTime(context),
+                  icon: const Icon(Icons.access_time),
+                  label: Text(
+                    _selectedTime == null
+                        ? 'Sélectionner une heure'
+                        : _selectedTime!.format(context),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-              Center(
-                child: ElevatedButton(
+                const Text(
+                  'Nombre de personnes :',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                DropdownButton<int>(
+                  value: _numberOfPeople,
+                  items: List.generate(10, (index) => index + 1)
+                      .map((e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e.toString()),
+                  ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => _numberOfPeople = value);
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Commentaire :',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _commentController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: 'Exemple : Je veux une table en terrasse...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitReservation,
                   style: ElevatedButton.styleFrom(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   ),
                   child: _isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Confirmer la réservation',
-                      style: TextStyle(fontSize: 18)),
+                      : const Text('Confirmer la réservation', style: TextStyle(fontSize: 18)),
                 ),
-              ),
-          ],
-        )
-            : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Vous devez être connecté pour réserver.',
-                style: TextStyle(fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
-                    ),
-                  );
-                },
-                child: const Text('Se connecter'),
-              ),
-            ],
+              ],
+            ),
           ),
+        ),
+      )
+          : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Vous devez être connecté pour réserver.',
+              style: TextStyle(fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              child: const Text('Se connecter'),
+            ),
+          ],
         ),
       ),
     );

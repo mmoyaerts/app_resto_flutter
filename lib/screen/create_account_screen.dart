@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_text_field.dart';
-// Note : Vous devrez ajuster cet import si le nom de votre projet n'est pas 'resto_app'
-// import 'package:resto_app/service/auth_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -17,35 +15,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
 
+  // Liste des rôles
+  final List<String> _roles = ['Client', 'Serveur', 'Admin'];
+  String? _selectedRole;
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
-      // TODO[cite: 102]: Implémenter la logique de création de compte (email/mot de passe minimum)
-      // Ex: final authService = AuthService();
-      // Ex: final success = await authService.register(_emailController.text, _passwordController.text);
+      // Simulation d'appel API
+      await Future.delayed(const Duration(seconds: 1));
 
-      await Future.delayed(const Duration(seconds: 1)); // Simulation d'appel API
+      setState(() => _isLoading = false);
 
-      setState(() {
-        _isLoading = false;
-      });
+      // Afficher le rôle choisi dans la console pour vérifier
+      print('Rôle choisi : $_selectedRole');
 
-      if (true) { // Remplacez 'true' par la réponse réelle de l'API
-        print('Compte créé : Naviguer vers l\'écran de connexion');
-        // Afficher un message de succès
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compte créé avec succès ! Veuillez vous connecter.')),
-        );
-        Navigator.pop(context); // Retour à l'écran de connexion
-      } else {
-        // Afficher une erreur
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de la création du compte.')),
-        );
-      }
+      // Afficher un message de succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compte créé avec succès ! Veuillez vous connecter.')),
+      );
+
+      Navigator.pop(context); // Retour à l'écran de connexion
     }
   }
 
@@ -116,6 +107,33 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 validator: (value) {
                   if (value != _passwordController.text) {
                     return 'Les mots de passe ne correspondent pas.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Menu déroulant pour le rôle
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Rôle',
+                ),
+                items: _roles.map((role) {
+                  return DropdownMenuItem<String>(
+                    value: role,
+                    child: Text(role),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRole = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez choisir un rôle';
                   }
                   return null;
                 },
