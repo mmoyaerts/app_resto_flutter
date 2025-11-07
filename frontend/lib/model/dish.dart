@@ -18,14 +18,22 @@ class Dish {
 
   // Factory pour créer un objet Dish à partir d'une réponse JSON de l'API
   factory Dish.fromJson(Map<String, dynamic> json) {
+    double parsedPrice = 0.0;
+
+    if (json['prix'] != null) {
+      if (json['prix'] is String) {
+        parsedPrice = double.tryParse(json['prix']) ?? 0.0;
+      } else if (json['prix'] is num) {
+        parsedPrice = json['prix'].toDouble();
+      }
+    }
+
     return Dish(
-      // Les noms des champs JSON sont basés sur votre requête SQL dans plat.js
-      name: json['nom'] as String,
-      description: json['description'] as String,
-      // Utilise num pour gérer si le prix est un int ou un double dans le JSON
-      price: (json['prix'] as num).toDouble(),
-      image: json['image'] as String? ?? '', // Gérer les images potentiellement nulles ou manquantes
-      category: json['type_nom'] as String, // 'type_nom' vient de la jointure SQL sur type_plats
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: parsedPrice,
+      image: json['image'] ?? '',
+      category: json['type_nom'] ?? '',
     );
   }
 }

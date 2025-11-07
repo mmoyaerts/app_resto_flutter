@@ -5,9 +5,7 @@ import 'package:http/http.dart' as http;
 import '../model/dish.dart';
 
 class DishService {
-  // L'URL est supposée être: http://10.0.2.2:3000/api/plats
-  // Vous devrez peut-être ajuster l'URL si votre route est différente.
-  final String _baseUrl = 'http://10.0.2.2:3000/api/plats';
+  final String _baseUrl = 'http://localhost:3000/api/plats';
 
   /// Récupère tous les plats pour un restaurant spécifique.
   /// On utilise l'ID '1' par défaut.

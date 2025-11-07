@@ -17,10 +17,10 @@ class _MenuPageState extends State<MenuPage> {
   // Liste des catégories (elles doivent correspondre aux valeurs de 'type_nom' de votre BDD)
   final List<String> categories = [
     'Formules',
-    'Entrées',
-    'Plats',
-    'Desserts',
-    'Boissons',
+    'Entrée',
+    'Plat',
+    'Dessert',
+    'Boisson froide',
   ];
 
   String selectedCategory = 'Formules';
@@ -76,10 +76,6 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
       // Affichage du loader ou du contenu
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
