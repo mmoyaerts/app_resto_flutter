@@ -1,6 +1,4 @@
-CREATE DATABASE restaurant;
 
-\c restaurant
 -- --------------------
 -- Table rôles
 -- --------------------

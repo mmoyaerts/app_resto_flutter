@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
         res.status(201).json({ message: "Utilisateur créé", user: newUser });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Erreur serveur" });
+        res.status(500).json({ message: "Erreur serveur" , nom, email, password});
     }
 };
 
