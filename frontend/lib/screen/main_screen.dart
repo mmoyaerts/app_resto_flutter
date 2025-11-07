@@ -34,10 +34,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: buildAppBar(context, widget.title),
       body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
@@ -49,5 +46,32 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+}
+
+AppBar buildAppBar(BuildContext context, String title) {
+  final auth = Provider.of<AuthProvider>(context, listen: false);
+
+  return AppBar(
+    title: Text(title),
+    backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.logout),
+        tooltip: 'Déconnexion',
+        onPressed: () {
+          // Appel de la méthode de déconnexion dans le provider
+          auth.logout();
+
+          // Affiche un message SnackBar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Vous êtes déconnecté')),
+          );
+
+          // Optionnel : redirige vers la page de connexion
+          Navigator.of(context).pushReplacementNamed('/login');
+        },
+      ),
+    ],
+  );
 }
 
