@@ -1,20 +1,14 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-
-const authRoutes = require('./routes/auth');
-
 const app = express();
+const authRoutes = require('./routes/authRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
 
-// Middlewares
-app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
-// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/reservations', reservationRoutes);
 
-app.get('/', (req, res) => {
-  res.send('API fonctionne !');
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));
 
-module.exports = app; // on exporte l'application
+module.exports = app;

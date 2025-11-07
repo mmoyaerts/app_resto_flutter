@@ -1,0 +1,76 @@
+const pool = require('../db');
+
+class Reservation {
+    // Vérifie si le restaurant est ouvert pour ce jour et cette heure
+    static async checkAvailability(restaurant_id, date_reservation, heure) {
+        try {
+            console.log('🕒 Vérification disponibilité pour :', {
+                restaurant_id,
+                date_reservation,
+                heure
+            });
+
+            const query = `
+                SELECT *
+                FROM ouverture
+                WHERE restaurant_id = $1
+                  AND TRIM(LOWER(jour)) = TRIM(LOWER(TO_CHAR($2::date, 'FMDay')))
+                  AND heure_ouverture <= $3
+                  AND heure_fermeture >= $3
+            `;
+
+            const { rows } = await pool.query(query, [
+                restaurant_id,
+                date_reservation,
+                heure
+            ]);
+
+            console.log('📅 Créneaux trouvés :', rows.length);
+            if (rows.length > 0) {
+                console.log('✅ Le restaurant est ouvert.');
+                return true;
+            } else {
+                console.warn('⚠️ Aucun créneau trouvé pour ce jour ou cette heure.');
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de la vérification de disponibilité :', error);
+            throw error;
+        }
+    }
+
+    // Création de réservation
+    static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts }) {
+        const isAvailable = await this.checkAvailability(restaurant_id, date_reservation, heure);
+
+        if (!isAvailable) {
+            throw new Error('Le restaurant est fermé à cette date ou heure. Choisissez un autre créneau.');
+        }
+
+        const query = `
+            INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+
+        const values = [utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts];
+        const { rows } = await pool.query(query, values);
+
+        console.log('✅ Réservation créée avec succès :', rows[0]);
+        return rows[0];
+    }
+
+    // Récupère toutes les réservations
+    static async findAll() {
+        const { rows } = await pool.query(`
+            SELECT r.*, u.nom AS utilisateur_nom, res.nom AS restaurant_nom
+            FROM reservations r
+            JOIN utilisateurs u ON r.utilisateur_id = u.id
+            JOIN restaurant res ON r.restaurant_id = res.id
+            ORDER BY date_reservation DESC, heure DESC
+        `);
+        return rows;
+    }
+}
+
+module.exports = Reservation;

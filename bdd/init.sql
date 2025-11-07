@@ -97,10 +97,10 @@ ON CONFLICT DO NOTHING;
 -- Insertion des horaires d’ouverture pour ce restaurant (id = 1)
 INSERT INTO ouverture (restaurant_id, jour, heure_ouverture, heure_fermeture)
 VALUES
-    (1, 'Lundi', '12:00', '22:00'),
-    (1, 'Mardi', '12:00', '22:00'),
-    (1, 'Mercredi', '12:00', '22:00'),
-    (1, 'Jeudi', '12:00', '22:00'),
-    (1, 'Vendredi', '12:00', '23:00'),
-    (1, 'Samedi', '12:00', '23:00'),
-    (1, 'Dimanche', '12:00', '21:00');
+(1, 'monday', '09:00', '17:00'),
+(1, 'tuesday', '09:00', '17:00'),
+(1, 'wednesday', '09:00', '17:00'),
+(1, 'thursday', '09:00', '17:00'),
+(1, 'friday', '09:00', '22:00'),
+(1, 'saturday', '11:00', '22:00'),
+(1, 'sunday', '11:00', '15:00');
