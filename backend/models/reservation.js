@@ -126,7 +126,7 @@ static async refuser(id) {
 static async supprimer(id) {
     const checkQuery = `
         SELECT * FROM reservations
-        WHERE id = $1 AND statut_id = 1; -- 1 = 'en attente'
+        WHERE id = $1 AND statut_id = 1;
     `;
     const { rows } = await pool.query(checkQuery, [id]);
 
