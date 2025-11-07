@@ -57,16 +57,14 @@ static async create({ utilisateur_id, restaurant_id, date_reservation, heure, no
 
     const reservation = rows[0];
 
-    // ✅ Correction ici : reformater la date pour éviter le décalage UTC
     reservation.date_reservation = new Date(reservation.date_reservation)
-        .toLocaleDateString('fr-CA'); // Format ISO local (YYYY-MM-DD)
+        .toLocaleDateString('fr-CA'); 
 
     console.log('✅ Réservation créée avec succès :', reservation);
     return reservation;
 }
 
 
-    // Récupère toutes les réservations
     static async findAll() {
         const { rows } = await pool.query(`
             SELECT r.*, u.nom AS utilisateur_nom, res.nom AS restaurant_nom
@@ -126,7 +124,6 @@ static async refuser(id) {
 
 // Supprimer une réservation par l'utilisateur
 static async supprimer(id) {
-    // Vérifie que la réservation appartient à l'utilisateur et est en attente
     const checkQuery = `
         SELECT * FROM reservations
         WHERE id = $1 AND statut_id = 1; -- 1 = 'en attente'

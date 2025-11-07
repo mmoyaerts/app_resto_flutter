@@ -36,7 +36,6 @@ class Plat {
     return rows[0];
   }
 
-  // 🔹 Supprimer un plat
   static async delete(id) {
     const query = `DELETE FROM plats WHERE id = $1 RETURNING *;`;
     const { rows } = await pool.query(query, [id]);

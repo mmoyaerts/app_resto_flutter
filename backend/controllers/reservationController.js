@@ -27,7 +27,6 @@ const reservation = await Reservation.create({
   }
 };
 
-// Récupérer toutes les réservations d'un restaurant
 exports.getReservationsByRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
@@ -39,7 +38,6 @@ exports.getReservationsByRestaurant = async (req, res) => {
     }
 };
 
-// Récupérer toutes les réservations d'un utilisateur
 exports.getReservationsByUtilisateur = async (req, res) => {
     try {
         const { id } = req.params;
@@ -53,7 +51,7 @@ exports.getReservationsByUtilisateur = async (req, res) => {
 
 exports.validerReservation = async (req, res) => {
   try {
-    const { role_id } = req.body; // récupéré depuis le JSON ou token
+    const { role_id } = req.body; 
     const reservationId = req.params.id;
 
     if (role_id !== 2) {
@@ -69,7 +67,7 @@ exports.validerReservation = async (req, res) => {
 
 exports.refuserReservation = async (req, res) => {
    try {
-    const { role_id } = req.body; // récupéré depuis le JSON ou token
+    const { role_id } = req.body; 
     const reservationId = req.params.id;
 
     if (role_id !== 2) {
@@ -83,7 +81,6 @@ exports.refuserReservation = async (req, res) => {
   }
 };
 
-// Supprimer une réservation (uniquement si en attente)
 exports.supprimerReservation = async (req, res) => {
     try {
         const { id } = req.params;

@@ -72,7 +72,6 @@ exports.updatePlat = async (req, res) => {
   }
 };
 
-// 🔹 Supprimer un plat
 exports.deletePlat = async (req, res) => {
   try {
     const { id } = req.params;
