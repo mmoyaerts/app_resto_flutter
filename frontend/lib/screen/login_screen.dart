@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/custom_text_field.dart';
-import '../service/auth_service.dart'; // Import du service pour la connexion
-import 'create_account_screen.dart'; // Import de l'écran de destination
-import 'main_screen.dart'; // NOUVEL IMPORT : MainScreen est l'écran d'accueil complet
-
+import '../providers/auth_provider.dart';       // Ton provider pour l’authentification
+import 'create_account_screen.dart';
+import 'main_screen.dart';            // Contient la BottomNavigationBar
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,40 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // TODO: Implémenter la logique de connexion (email/mot de passe minimum) [cite: 102]
-      final authService = AuthService();
-      final String? token = await authService.login(
-        _emailController.text,
-        _passwordController.text,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (token != null) { // Si un token est reçu, la connexion est réussie
-        print('Connexion réussie: Naviguer vers l\'écran d\'accueil (MainScreen)');
-
-        // TODO: Naviguer vers l'écran d'accueil ou de menu
-        // CHANGEMENT ICI : Navigation vers MainScreen qui contient la NavBar et MenuPage
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen(title: 'Restaurant App')),
-        );
-      } else {
-        // Afficher une erreur
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Échec de la connexion. Email ou mot de passe incorrect.')),
-        );
-      }
-    }
-  }
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -59,13 +25,40 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final success = await auth.login(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email ou mot de passe incorrect'),
+        ),
+      );
+      return;
+    }
+
+    // Connexion réussie -> MainScreen affichera automatiquement la BottomNavigationBar
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MainScreen(title: 'Menu du petit cochon'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Se connecter'),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -127,13 +120,16 @@ class _LoginScreenState extends State<LoginScreen> {
               // Lien vers l'inscription
               TextButton(
                 onPressed: () {
-                  // Navigation vers la page de création de compte
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const CreateAccountScreen(),
+                    ),
                   );
                 },
-                child: const Text("Pas encore de compte ? Créer un compte"),
+                child: const Text(
+                  "Pas encore de compte ? Créer un compte",
+                ),
               ),
             ],
           ),
