@@ -40,25 +40,23 @@ class Reservation {
     }
 
     // Création de réservation
-    static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire }) {
+// Création de réservation
+static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire }) {
     const isAvailable = await this.checkAvailability(restaurant_id, date_reservation, heure);
-
     if (!isAvailable) {
         throw new Error('Le restaurant est fermé à cette date ou heure. Choisissez un autre créneau.');
     }
 
     const query = `
-        INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *
+        INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire, statut_id)
+        VALUES ($1, $2, $3, $4, $5, $6, 1) -- 1 = 'en attente'
+        RETURNING *;
     `;
-
     const values = [utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire];
     const { rows } = await pool.query(query, values);
-
-    console.log('✅ Réservation créée avec succès :', rows[0]);
     return rows[0];
 }
+
 
     // Récupère toutes les réservations
     static async findAll() {
@@ -97,42 +95,47 @@ static async findByUtilisateur(utilisateur_id) {
 }
 
 static async valider(id) {
-    try {
-        const query = `
-            UPDATE reservations
-            SET statut = 'validée'
-            WHERE id = $1
-            RETURNING *;
-        `;
-        const { rows } = await pool.query(query, [id]);
-        if (rows.length === 0) {
-            throw new Error("Réservation introuvable.");
-        }
-        return rows[0];
-    } catch (error) {
-        console.error("❌ Erreur validation réservation :", error);
-        throw error;
-    }
+    const query = `
+        UPDATE reservations
+        SET statut_id = 2 -- 2 = 'validée'
+        WHERE id = $1
+        RETURNING *;
+    `;
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
 }
 
-// Dans class Reservation
 static async refuser(id) {
-    try {
-        const query = `
-            UPDATE reservations
-            SET statut = 'refusée'
-            WHERE id = $1
-            RETURNING *;
-        `;
-        const { rows } = await pool.query(query, [id]);
-        if (rows.length === 0) {
-            throw new Error("Réservation introuvable.");
-        }
-        return rows[0];
-    } catch (error) {
-        console.error("❌ Erreur refus réservation :", error);
-        throw error;
+    const query = `
+        UPDATE reservations
+        SET statut_id = 3 -- 3 = 'refusée'
+        WHERE id = $1
+        RETURNING *;
+    `;
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
+}
+
+// Supprimer une réservation par l'utilisateur
+static async supprimer(id) {
+    // Vérifie que la réservation appartient à l'utilisateur et est en attente
+    const checkQuery = `
+        SELECT * FROM reservations
+        WHERE id = $1 AND statut_id = 1; -- 1 = 'en attente'
+    `;
+    const { rows } = await pool.query(checkQuery, [id]);
+
+    if (rows.length === 0) {
+        throw new Error('Impossible de supprimer cette réservation (non trouvée ou déjà traitée).');
     }
+
+    const deleteQuery = `
+        DELETE FROM reservations
+        WHERE id = $1
+        RETURNING *;
+    `;
+    const result = await pool.query(deleteQuery, [id]);
+    return result.rows[0];
 }
 
 }

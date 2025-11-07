@@ -83,3 +83,16 @@ exports.refuserReservation = async (req, res) => {
   }
 };
 
+// Supprimer une réservation (uniquement si en attente)
+exports.supprimerReservation = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const reservation = await Reservation.supprimer(id);
+        res.json({ message: 'Réservation supprimée avec succès.', reservation });
+    } catch (error) {
+        console.error('❌ Erreur suppression réservation :', error);
+        res.status(400).json({ message: error.message });
+    }
+};
+

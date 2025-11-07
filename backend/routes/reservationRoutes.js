@@ -14,6 +14,7 @@ router.get('/utilisateur/:id', reservationController.getReservationsByUtilisateu
 router.patch('/:id/valider', reservationController.validerReservation);
 router.patch('/:id/refuser', reservationController.refuserReservation);
 
+router.delete('/:id', reservationController.supprimerReservation);
 
 module.exports = router;
 

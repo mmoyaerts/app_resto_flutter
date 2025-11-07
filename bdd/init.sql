@@ -65,6 +65,19 @@ CREATE TABLE IF NOT EXISTS ouverture (
 );
 
 -- --------------------
+-- Table statut_reservations
+-- --------------------
+CREATE TABLE IF NOT EXISTS statut_reservations (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Insertion des statuts de base
+INSERT INTO statut_reservations (nom) VALUES
+('en attente'),
+('validée'),
+('refusée');
+-- --------------------
 -- Table réservations
 -- --------------------
 CREATE TABLE IF NOT EXISTS reservations (
@@ -75,12 +88,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     heure TIME NOT NULL,
     nombre_couverts INT NOT NULL,
     commentaire VARCHAR(150),
-    statut VARCHAR(20) DEFAULT 'en attente'
+    statut_id INT REFERENCES statut_reservations(id) DEFAULT 1
 );
-
--- --------------------
--- Données initiales
--- --------------------
 
 -- Insertion des rôles
 INSERT INTO roles (nom)
@@ -105,3 +114,7 @@ VALUES
 (1, 'friday', '09:00', '22:00'),
 (1, 'saturday', '11:00', '22:00'),
 (1, 'sunday', '11:00', '15:00');
+
+
+
+
