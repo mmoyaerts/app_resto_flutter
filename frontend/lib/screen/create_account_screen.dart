@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../widgets/custom_text_field.dart';
 import '../service/auth_service.dart';
@@ -41,7 +43,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
       final roleValue = _getRoleValue(_selectedRole!);
 
-      final success = await AuthService().register(
+      final response = await AuthService().register(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text.trim(),
@@ -50,14 +52,27 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
       setState(() => _isLoading = false);
 
-      // Afficher un message de succès
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compte créé avec succès ! Veuillez vous connecter.')),
-      );
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Compte créé avec succès !')),
+        );
+        Navigator.pop(context);
+      } else {
+        String message;
+        try {
+          final data = jsonDecode(response.body);
+          message = data['message'] ?? 'Erreur inconnue (${response.statusCode})';
+        } catch (_) {
+          message = 'Erreur serveur (${response.statusCode})';
+        }
 
-      Navigator.pop(context); // Retour à l'écran de connexion
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$message')),
+        );
+      }
     }
   }
+
 
   @override
   void dispose() {
