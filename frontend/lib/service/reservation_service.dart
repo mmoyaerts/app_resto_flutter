@@ -107,11 +107,9 @@ class ReservationService {
         final data = jsonDecode(response.body);
         return data['statut_id'] == 2;
       } else {
-        print('❌ Erreur validation réservation : ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('❌ Exception validation réservation : $e');
       return false;
     }
   }
@@ -135,11 +133,35 @@ class ReservationService {
         final data = jsonDecode(response.body);
         return data['statut_id'] == 3;
       } else {
-        print('❌ Erreur refus réservation : ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('❌ Exception refus réservation : $e');
+      return false;
+    }
+  }
+
+  /// Supprimer une reservastion
+  Future<bool> deleteReservation(int reservationId, int roleId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/$reservationId');
+
+      final response = await http.delete(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'role_id': roleId}), // envoie role_id dans le body
+      );
+
+      if (response.statusCode == 200) {
+        // Succès
+        return true;
+      } else {
+        // Erreur côté serveur
+        print('Erreur suppression: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      // Erreur réseau ou autre
+      print('Exception suppression: $e');
       return false;
     }
   }

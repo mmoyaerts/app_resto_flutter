@@ -102,6 +102,30 @@ class ReservationCard extends StatelessWidget {
                   ),
                 ],
               ),
+            // Bouton Supprimer pour role 1
+            if (auth.role == 1 && reservation.statut.toLowerCase() == 'en attente')
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      bool success = await reservationService.deleteReservation(reservation.id, auth.role!);
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Réservation supprimée avec succès')),
+                        );
+                        if (onRefresh != null) onRefresh!();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Erreur lors de la suppression')),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Supprimer'),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
