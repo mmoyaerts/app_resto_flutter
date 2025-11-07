@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'menu_page.dart';
+import 'reservation_page.dart';
+import 'login_screen.dart';
 
 
 class MainScreen extends StatefulWidget {
@@ -17,6 +19,8 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = const [
     MenuPage(title: 'Menu du petit cochon'),
+    ReservationPage(),
+    LoginScreen(),
   ];
 
   void _onItemTapped(int index) {
