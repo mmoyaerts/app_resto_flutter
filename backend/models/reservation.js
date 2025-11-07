@@ -71,6 +71,30 @@ class Reservation {
         `);
         return rows;
     }
+    static async findByRestaurant(restaurant_id) {
+    const { rows } = await pool.query(`
+        SELECT r.*, u.nom AS utilisateur_nom, res.nom AS restaurant_nom
+        FROM reservations r
+        JOIN utilisateurs u ON r.utilisateur_id = u.id
+        JOIN restaurant res ON r.restaurant_id = res.id
+        WHERE r.restaurant_id = $1
+        ORDER BY date_reservation DESC, heure DESC
+    `, [restaurant_id]);
+    return rows;
+}
+
+// Récupère toutes les réservations d'un utilisateur
+static async findByUtilisateur(utilisateur_id) {
+    const { rows } = await pool.query(`
+        SELECT r.*, u.nom AS utilisateur_nom, res.nom AS restaurant_nom
+        FROM reservations r
+        JOIN utilisateurs u ON r.utilisateur_id = u.id
+        JOIN restaurant res ON r.restaurant_id = res.id
+        WHERE r.utilisateur_id = $1
+        ORDER BY date_reservation DESC, heure DESC
+    `, [utilisateur_id]);
+    return rows;
+}
 }
 
 module.exports = Reservation;

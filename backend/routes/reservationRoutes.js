@@ -5,8 +5,9 @@ const reservationController = require('../controllers/reservationController');
 // POST /api/reservations - créer une réservation
 router.post('/', reservationController.createReservation);
 
-// GET /api/reservations/:utilisateur_id - récupérer les réservations d’un utilisateur
+// Récupérer toutes les réservations d’un restaurant
+router.get('/restaurant/:id', reservationController.getReservationsByRestaurant);
 
-// DELETE /api/reservations/:id - annuler une réservation
-
+// Récupérer toutes les réservations d’un utilisateur
+router.get('/utilisateur/:id', reservationController.getReservationsByUtilisateur);
 module.exports = router;

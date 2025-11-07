@@ -26,3 +26,27 @@ const reservation = await Reservation.create({
     res.status(400).json({ message: error.message });
   }
 };
+
+// Récupérer toutes les réservations d'un restaurant
+exports.getReservationsByRestaurant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reservations = await Reservation.findByRestaurant(id);
+        res.status(200).json(reservations);
+    } catch (error) {
+        console.error('❌ Erreur récupération réservations restaurant :', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Récupérer toutes les réservations d'un utilisateur
+exports.getReservationsByUtilisateur = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reservations = await Reservation.findByUtilisateur(id);
+        res.status(200).json(reservations);
+    } catch (error) {
+        console.error('❌ Erreur récupération réservations utilisateur :', error);
+        res.status(500).json({ message: error.message });
+    }
+};
