@@ -53,10 +53,10 @@ exports.getReservationsByUtilisateur = async (req, res) => {
 
 exports.validerReservation = async (req, res) => {
   try {
-    const { role } = req.body; // récupéré depuis le JSON ou token
+    const { role_id } = req.body; // récupéré depuis le JSON ou token
     const reservationId = req.params.id;
 
-    if (role !== 'Serveur') {
+    if (role_id !== 2) {
       return res.status(403).json({ message: "Seuls les serveurs peuvent valider une réservation." });
     }
 
@@ -68,11 +68,11 @@ exports.validerReservation = async (req, res) => {
 };
 
 exports.refuserReservation = async (req, res) => {
-  try {
-    const { role } = req.body; // récupéré depuis le JSON ou token
+   try {
+    const { role_id } = req.body; // récupéré depuis le JSON ou token
     const reservationId = req.params.id;
 
-    if (role !== 'Serveur') {
+    if (role_id !== 2) {
       return res.status(403).json({ message: "Seuls les serveurs peuvent refuser une réservation." });
     }
 
