@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS plats (
     description TEXT,
     prix NUMERIC(8,2) NOT NULL,
     type_id INT REFERENCES type_plats(id),
-    restaurant_id INT REFERENCES restaurant(id)
+    restaurant_id INT REFERENCES restaurant(id),
+    image VARCHAR(255)
 );
 
 -- --------------------
@@ -117,4 +118,39 @@ VALUES
 
 
 
+-- Ajout de la colonne image si elle n'existe pas
+ALTER TABLE plats
+ADD COLUMN IF NOT EXISTS image VARCHAR(255);
+
+-- Création des types de plats (si non existants)
+INSERT INTO type_plats (nom)
+VALUES 
+    ('Entrée'),
+    ('Plat'),
+    ('Dessert'),
+    ('Boisson chaude'),
+    ('Boisson froide'),
+    ('Alcool');
+
+-- Insertion de tous les plats en un seul bloc
+INSERT INTO plats (nom, description, prix, type_id, restaurant_id, image)
+SELECT nom, description, prix, type_id, restaurant_id, image
+FROM (
+    VALUES
+        -- 🍴 Entrées
+        ('Salade César', 'Salade romaine, poulet grillé, croûtons, parmesan et sauce César.', 8.50, (SELECT id FROM type_plats WHERE nom = 'Entrée'), 1, 'assets/images/salade-cesar.webp'),
+        ('Soupe à l’oignon', 'Soupe traditionnelle gratinée au fromage.', 6.90, (SELECT id FROM type_plats WHERE nom = 'Entrée'), 1, 'assets/images/soupejpg.jpg'),
+
+        -- 🍗 Plats
+        ('Steak frites', 'Pièce de bœuf grillée servie avec des frites maison.', 14.90, (SELECT id FROM type_plats WHERE nom = 'Plat'), 1, 'assets/images/steakfrite.jpg'),
+        ('Pâtes carbonara', 'Spaghetti à la sauce crémeuse, lardons et parmesan.', 12.50, (SELECT id FROM type_plats WHERE nom = 'Plat'), 1, 'assets/images/patecarbo.webp'),
+
+        -- 🍰 Desserts
+        ('Tiramisu', 'Dessert italien à base de mascarpone, café et cacao.', 5.90, (SELECT id FROM type_plats WHERE nom = 'Dessert'), 1, 'assets/images/tiramisu.jpg'),
+        ('Crème brûlée', 'Crème à la vanille caramélisée.', 5.50, (SELECT id FROM type_plats WHERE nom = 'Dessert'), 1, 'assets/images/cremebrulee.webp'),
+
+        -- 🧃 Boissons froides
+        ('Coca-Cola 33cl', 'Boisson gazeuse rafraîchissante.', 3.00, (SELECT id FROM type_plats WHERE nom = 'Boisson froide'), 1, 'assets/images/COCA-33cl.webp'),
+        ('Jus d’orange', 'Pur jus d’orange frais pressé.', 3.20, (SELECT id FROM type_plats WHERE nom = 'Boisson froide'), 1, 'assets/images/jusdorange.png')
+) AS plats_temp(nom, description, prix, type_id, restaurant_id, image)
 
