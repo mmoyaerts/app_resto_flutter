@@ -58,7 +58,15 @@ class _ListeReservationPageState extends State<ListeReservationPage> {
           return ListView.builder(
             itemCount: reservations.length,
             itemBuilder: (context, index) {
-              return ReservationCard(reservation: reservations[index]);
+              return ReservationCard(
+                reservation: reservations[index],
+                onRefresh: () {
+                  // Mettre à jour la liste après action
+                  setState(() {
+                    _futureReservations = _loadReservations();
+                  });
+                },
+              );
             },
           );
         },

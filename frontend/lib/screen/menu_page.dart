@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../model/dish.dart';
 import '../widgets/dish_card.dart';
+import '../providers/auth_provider.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key, required this.title});
@@ -100,6 +102,21 @@ class _MenuPageState extends State<MenuPage> {
       appBar: AppBar(
         title: Text(widget.title),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Déconnexion',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Vous êtes déconnecté(e)'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              Provider.of<AuthProvider>(context, listen: false).logout();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

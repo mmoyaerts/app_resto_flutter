@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../service/reservation_service.dart';
-
+import '../model/reservation.dart';
+import '../widgets/reservation_card.dart';
+import 'login_screen.dart';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -20,6 +21,14 @@ class _ReservationPageState extends State<ReservationPage> {
   bool _isSubmitting = false;
 
   final ReservationService _reservationService = ReservationService();
+  late Future<List<Reservation>?> _futureReservations;
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    _futureReservations = _reservationService.getReservationsByUser(auth.id!);
+  }
 
   List<String> _generateTimeSlots() {
     List<String> slots = [];
@@ -53,14 +62,6 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay now = TimeOfDay.now();
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: now,
-    );
-  }
-
   void _submitReservation() async {
     if (_selectedDate == null || _selectedTimeStr == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +71,6 @@ class _ReservationPageState extends State<ReservationPage> {
     }
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-
     if (!auth.isLoggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vous devez être connecté pour réserver.')),
@@ -80,19 +80,20 @@ class _ReservationPageState extends State<ReservationPage> {
 
     setState(() => _isSubmitting = true);
 
+    // Date + heure
     final parts = _selectedTimeStr!.split(':');
     final reservationDate = DateTime(
       _selectedDate!.year,
       _selectedDate!.month,
       _selectedDate!.day,
-      int.parse(parts[0]), // heures
-      int.parse(parts[1]), // minutes
+      int.parse(parts[0]),
+      int.parse(parts[1]),
     );
 
-    final dateStr = '${reservationDate.year}-${reservationDate.month.toString().padLeft(2,'0')}-${reservationDate.day.toString().padLeft(2,'0')}';
+    final dateStr =
+        '${reservationDate.year}-${reservationDate.month.toString().padLeft(2,'0')}-${reservationDate.day.toString().padLeft(2,'0')}';
     final heureStr = _selectedTimeStr!;
 
-    // Appel au service pour créer la réservation
     final response = await _reservationService.createReservation(
       userId: auth.id!,
       date: dateStr,
@@ -117,6 +118,7 @@ class _ReservationPageState extends State<ReservationPage> {
         _selectedDate = null;
         _selectedTimeStr = null;
         _numberOfPeople = 1;
+        _futureReservations = _reservationService.getReservationsByUser(auth.id!);
       });
     } else {
       final message = response?['message'] ?? 'Erreur inconnue';
@@ -126,7 +128,6 @@ class _ReservationPageState extends State<ReservationPage> {
       );
     }
   }
-
 
   @override
   void dispose() {
@@ -138,121 +139,159 @@ class _ReservationPageState extends State<ReservationPage> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
 
-    return Scaffold(
-      body: auth.isLoggedIn
-          ? SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'Choisissez votre date :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: () => _selectDate(context),
-                  icon: const Icon(Icons.calendar_today),
-                  label: Text(
-                    _selectedDate == null
-                        ? 'Sélectionner une date'
-                        : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Choisissez votre heure :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                DropdownButton<String>(
-                  value: _selectedTimeStr,
-                  hint: const Text('Sélectionner une heure'),
-                  items: _generateTimeSlots().map((time) {
-                    return DropdownMenuItem(
-                      value: time,
-                      child: Text(time),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedTimeStr = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Nombre de personnes :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                DropdownButton<int>(
-                  value: _numberOfPeople,
-                  items: List.generate(10, (index) => index + 1)
-                      .map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(e.toString()),
-                  ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setState(() => _numberOfPeople = value);
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Commentaire :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _commentController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: 'Exemple : Je veux une table en terrasse...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submitReservation,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  ),
-                  child: _isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Confirmer la réservation', style: TextStyle(fontSize: 18)),
-                ),
-              ],
-            ),
+    if (!auth.isLoggedIn) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Vous devez être connecté pour réserver.',
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                },
+                child: const Text('Se connecter'),
+              ),
+            ],
           ),
         ),
-      )
-          : Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Vous devez être connecté pour réserver.',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-              child: const Text('Se connecter'),
-            ),
-          ],
+      );
+    }
+
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Liste des réservations de l'utilisateur
+              FutureBuilder<List<Reservation>?>(
+                future: _futureReservations,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Erreur : ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Aucune réservation trouvée.'));
+                  }
+
+                  final reservations = snapshot.data!;
+                  return Column(
+                    children: reservations
+                        .map((res) => ReservationCard(reservation: res))
+                        .toList(),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                'Nouvelle réservation',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+
+              // Sélection de la date
+              const Text(
+                'Choisissez votre date :',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: () => _selectDate(context),
+                icon: const Icon(Icons.calendar_today),
+                label: Text(
+                  _selectedDate == null
+                      ? 'Sélectionner une date'
+                      : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Sélection de l'heure
+              const Text(
+                'Choisissez votre heure :',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              DropdownButton<String>(
+                value: _selectedTimeStr,
+                hint: const Text('Sélectionner une heure'),
+                items: _generateTimeSlots().map((time) {
+                  return DropdownMenuItem(
+                    value: time,
+                    child: Text(time),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedTimeStr = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Nombre de couverts
+              const Text(
+                'Nombre de personnes :',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              DropdownButton<int>(
+                value: _numberOfPeople,
+                items: List.generate(10, (index) => index + 1)
+                    .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(e.toString()),
+                ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _numberOfPeople = value);
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Commentaire
+              const Text(
+                'Commentaire :',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _commentController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Exemple : Je veux une table en terrasse...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // Bouton confirmer
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitReservation,
+                style: ElevatedButton.styleFrom(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                ),
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Confirmer la réservation',
+                    style: TextStyle(fontSize: 18)),
+              ),
+            ],
+          ),
         ),
       ),
     );
