@@ -39,22 +39,30 @@ class Reservation {
         }
     }
 
-    // Création de réservation
-// Création de réservation
 static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire }) {
     const isAvailable = await this.checkAvailability(restaurant_id, date_reservation, heure);
+
     if (!isAvailable) {
         throw new Error('Le restaurant est fermé à cette date ou heure. Choisissez un autre créneau.');
     }
 
     const query = `
         INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire, statut_id)
-        VALUES ($1, $2, $3, $4, $5, $6, 1) -- 1 = 'en attente'
-        RETURNING *;
+        VALUES ($1, $2, $3, $4, $5, $6, 1)
+        RETURNING *
     `;
+
     const values = [utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+
+    const reservation = rows[0];
+
+    // ✅ Correction ici : reformater la date pour éviter le décalage UTC
+    reservation.date_reservation = new Date(reservation.date_reservation)
+        .toLocaleDateString('fr-CA'); // Format ISO local (YYYY-MM-DD)
+
+    console.log('✅ Réservation créée avec succès :', reservation);
+    return reservation;
 }
 
 
