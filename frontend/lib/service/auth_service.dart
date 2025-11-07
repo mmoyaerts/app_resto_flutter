@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 // À compléter avec la logique d'appel HTTP (package 'http' ou 'dio')
 class AuthService {
-  final String _baseUrl = 'http://localhost:3000/api/auth';
+  final String _baseUrl = 'http://127.0.0.1:3000/api/auth';
 
   /// Tente de connecter l'utilisateur et retourne le token JWT en cas de succès.
   Future<Map<String, dynamic>?> login(String email, String password) async {
@@ -18,11 +18,12 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      final utilisateur = data['utilisateur'];
 
       return {
         'token': data['token'] as String,
-        'role': int.tryParse(data['role_id'].toString()),
-        'id': int.tryParse(data['id'].toString()),
+        'role': int.tryParse(utilisateur['role_id'].toString()),
+        'id': int.tryParse(utilisateur['id'].toString()),
       };
     }
 

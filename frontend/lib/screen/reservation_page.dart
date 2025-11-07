@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../service/reservation_service.dart';
+
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -12,10 +14,30 @@ class ReservationPage extends StatefulWidget {
 
 class _ReservationPageState extends State<ReservationPage> {
   DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  String? _selectedTimeStr;
   int _numberOfPeople = 1;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitting = false;
+
+  final ReservationService _reservationService = ReservationService();
+
+  List<String> _generateTimeSlots() {
+    List<String> slots = [];
+
+    // Midi : 11h00 -> 15h00
+    for (int hour = 11; hour <= 15; hour++) {
+      slots.add('${hour.toString().padLeft(2, '0')}:00');
+      if (hour != 15) slots.add('${hour.toString().padLeft(2, '0')}:30');
+    }
+
+    // Soir : 19h00 -> 22h00
+    for (int hour = 19; hour <= 22; hour++) {
+      slots.add('${hour.toString().padLeft(2, '0')}:00');
+      if (hour != 22) slots.add('${hour.toString().padLeft(2, '0')}:30');
+    }
+
+    return slots;
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime now = DateTime.now();
@@ -37,38 +59,74 @@ class _ReservationPageState extends State<ReservationPage> {
       context: context,
       initialTime: now,
     );
-    if (picked != null) {
-      setState(() => _selectedTime = picked);
-    }
   }
 
   void _submitReservation() async {
-    if (_selectedDate == null || _selectedTime == null) {
+    if (_selectedDate == null || _selectedTimeStr == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez choisir une date et une heure.')),
       );
       return;
     }
 
-    setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isSubmitting = false);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Réservation confirmée le ${_selectedDate!.day}/${_selectedDate!.month} à ${_selectedTime!.format(context)} pour $_numberOfPeople personne(s).',
-        ),
-      ),
+    if (!auth.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vous devez être connecté pour réserver.')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    final parts = _selectedTimeStr!.split(':');
+    final reservationDate = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      int.parse(parts[0]), // heures
+      int.parse(parts[1]), // minutes
     );
 
-    _commentController.clear();
-    setState(() {
-      _selectedDate = null;
-      _selectedTime = null;
-      _numberOfPeople = 1;
-    });
+    final dateStr = '${reservationDate.year}-${reservationDate.month.toString().padLeft(2,'0')}-${reservationDate.day.toString().padLeft(2,'0')}';
+    final heureStr = _selectedTimeStr!;
+
+    // Appel au service pour créer la réservation
+    final response = await _reservationService.createReservation(
+      userId: auth.id!,
+      date: dateStr,
+      heure: heureStr,
+      commentaire: _commentController.text,
+      nombreCouvert: _numberOfPeople,
+    );
+
+    setState(() => _isSubmitting = false);
+
+    if (response?['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Réservation confirmée le $dateStr à $heureStr pour $_numberOfPeople personne(s).',
+          ),
+        ),
+      );
+
+      _commentController.clear();
+      setState(() {
+        _selectedDate = null;
+        _selectedTimeStr = null;
+        _numberOfPeople = 1;
+      });
+    } else {
+      final message = response?['message'] ?? 'Erreur inconnue';
+      final code = response?['statusCode'] != null ? ' (Code: ${response?['statusCode']})' : '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur réservation: $message$code')),
+      );
+    }
   }
+
 
   @override
   void dispose() {
@@ -110,14 +168,20 @@ class _ReservationPageState extends State<ReservationPage> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: () => _selectTime(context),
-                  icon: const Icon(Icons.access_time),
-                  label: Text(
-                    _selectedTime == null
-                        ? 'Sélectionner une heure'
-                        : _selectedTime!.format(context),
-                  ),
+                DropdownButton<String>(
+                  value: _selectedTimeStr,
+                  hint: const Text('Sélectionner une heure'),
+                  items: _generateTimeSlots().map((time) {
+                    return DropdownMenuItem(
+                      value: time,
+                      child: Text(time),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedTimeStr = value;
+                    });
+                  },
                 ),
                 const SizedBox(height: 20),
 
