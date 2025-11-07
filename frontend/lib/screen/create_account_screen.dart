@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_text_field.dart';
+import '../service/auth_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -13,23 +14,41 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
 
   // Liste des rôles
   final List<String> _roles = ['Client', 'Serveur', 'Admin'];
   String? _selectedRole;
 
+  int _getRoleValue(String role) {
+    switch (role) {
+      case 'Client':
+        return 1;
+      case 'Serveur':
+        return 2;
+      case 'Admin':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Simulation d'appel API
-      await Future.delayed(const Duration(seconds: 1));
+      final roleValue = _getRoleValue(_selectedRole!);
+
+      final success = await AuthService().register(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        roleValue,
+      );
 
       setState(() => _isLoading = false);
-
-      // Afficher le rôle choisi dans la console pour vérifier
-      print('Rôle choisi : $_selectedRole');
 
       // Afficher un message de succès
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,6 +86,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 30),
+
+              // Champ Nom
+              CustomTextField(
+                controller: _nameController,
+                labelText: 'Nom complet',
+                prefixIcon: Icons.person_outline,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer votre nom.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
 
               // Champ Email
               CustomTextField(
