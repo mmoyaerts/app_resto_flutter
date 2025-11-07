@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   http: ^1.1.0  # Utilisez la dernière version stable ou celle-ci
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:
