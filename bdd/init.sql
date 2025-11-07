@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     date_reservation DATE NOT NULL,
     heure TIME NOT NULL,
     nombre_couverts INT NOT NULL,
+    commentaire VARCHAR(150),
     statut VARCHAR(20) DEFAULT 'en attente'
 );
 

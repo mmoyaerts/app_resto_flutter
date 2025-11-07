@@ -40,25 +40,25 @@ class Reservation {
     }
 
     // Création de réservation
-    static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts }) {
-        const isAvailable = await this.checkAvailability(restaurant_id, date_reservation, heure);
+    static async create({ utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire }) {
+    const isAvailable = await this.checkAvailability(restaurant_id, date_reservation, heure);
 
-        if (!isAvailable) {
-            throw new Error('Le restaurant est fermé à cette date ou heure. Choisissez un autre créneau.');
-        }
-
-        const query = `
-            INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *
-        `;
-
-        const values = [utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts];
-        const { rows } = await pool.query(query, values);
-
-        console.log('✅ Réservation créée avec succès :', rows[0]);
-        return rows[0];
+    if (!isAvailable) {
+        throw new Error('Le restaurant est fermé à cette date ou heure. Choisissez un autre créneau.');
     }
+
+    const query = `
+        INSERT INTO reservations (utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+    `;
+
+    const values = [utilisateur_id, restaurant_id, date_reservation, heure, nombre_couverts, commentaire];
+    const { rows } = await pool.query(query, values);
+
+    console.log('✅ Réservation créée avec succès :', rows[0]);
+    return rows[0];
+}
 
     // Récupère toutes les réservations
     static async findAll() {
