@@ -50,3 +50,36 @@ exports.getReservationsByUtilisateur = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.validerReservation = async (req, res) => {
+  try {
+    const { role } = req.body; // récupéré depuis le JSON ou token
+    const reservationId = req.params.id;
+
+    if (role !== 'Serveur') {
+      return res.status(403).json({ message: "Seuls les serveurs peuvent valider une réservation." });
+    }
+
+    const reservation = await Reservation.valider(reservationId);
+    res.json(reservation);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.refuserReservation = async (req, res) => {
+  try {
+    const { role } = req.body; // récupéré depuis le JSON ou token
+    const reservationId = req.params.id;
+
+    if (role !== 'Serveur') {
+      return res.status(403).json({ message: "Seuls les serveurs peuvent refuser une réservation." });
+    }
+
+    const reservation = await Reservation.refuser(reservationId);
+    res.json(reservation);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+

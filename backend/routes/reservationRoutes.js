@@ -10,4 +10,10 @@ router.get('/restaurant/:id', reservationController.getReservationsByRestaurant)
 
 // Récupérer toutes les réservations d’un utilisateur
 router.get('/utilisateur/:id', reservationController.getReservationsByUtilisateur);
+
+router.patch('/:id/valider', reservationController.validerReservation);
+router.patch('/:id/refuser', reservationController.refuserReservation);
+
+
 module.exports = router;
+

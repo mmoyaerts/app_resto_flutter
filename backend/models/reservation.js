@@ -95,6 +95,46 @@ static async findByUtilisateur(utilisateur_id) {
     `, [utilisateur_id]);
     return rows;
 }
+
+static async valider(id) {
+    try {
+        const query = `
+            UPDATE reservations
+            SET statut = 'validée'
+            WHERE id = $1
+            RETURNING *;
+        `;
+        const { rows } = await pool.query(query, [id]);
+        if (rows.length === 0) {
+            throw new Error("Réservation introuvable.");
+        }
+        return rows[0];
+    } catch (error) {
+        console.error("❌ Erreur validation réservation :", error);
+        throw error;
+    }
+}
+
+// Dans class Reservation
+static async refuser(id) {
+    try {
+        const query = `
+            UPDATE reservations
+            SET statut = 'refusée'
+            WHERE id = $1
+            RETURNING *;
+        `;
+        const { rows } = await pool.query(query, [id]);
+        if (rows.length === 0) {
+            throw new Error("Réservation introuvable.");
+        }
+        return rows[0];
+    } catch (error) {
+        console.error("❌ Erreur refus réservation :", error);
+        throw error;
+    }
+}
+
 }
 
 module.exports = Reservation;
