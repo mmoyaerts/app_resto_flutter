@@ -3,38 +3,33 @@ import 'package:http/http.dart' as http;
 // À compléter avec la logique d'appel HTTP (package 'http' ou 'dio')
 class AuthService {
   // TODO: Définir l'URL de base de votre API [cite: 34]
-  final String _baseUrl = 'http://votre-api.com/api/v1';
+  final String _baseUrl = 'http://localhost:3000/api';
 
   /// Tente de connecter l'utilisateur et retourne le token JWT en cas de succès.
   Future<String?> login(String email, String password) async {
     if (email == 'toto@gmail.com' && password == '1234') {
       return 'fake-jwt-token'; // token fictif
     }
-    /*final response = await http.post(
-      Uri.parse('$_baseUrl/login'), // Endpoint API de connexion [cite: 26]
+    final response = await http.post(
+      Uri.parse('$_baseUrl/login'),
       body: {'email': email, 'password': password},
-      // Headers pour JSON si nécessaire
     );
 
     if (response.statusCode == 200) {
-      // TODO: Parser la réponse pour extraire le Token (JWT)
-      // return jsonDecode(response.body)['token'];
       return 'fake-jwt-token';
-    } */else {
-      // Gérer les erreurs (identifiants invalides, etc.)
+    } else {
+      // Gérer les erreurs
       return null;
     }
   }
 
   /// Tente de créer un nouveau compte.
-  Future<bool> register(String email, String password) async {
+  Future<bool> register(String nom, String email, String password, int role) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/register'), // Endpoint API de création de compte [cite: 26]
-      body: {'email': email, 'password': password},
+      Uri.parse('$_baseUrl/register'),
+      body: {'nom': nom, 'email': email, 'password': password, 'role': role},
     );
 
-    return response.statusCode == 201; // 201 Created
+    return response.statusCode == 201;
   }
-
-// TODO: Ajouter des méthodes pour la déconnexion, le stockage/récupération du JWT, etc.
 }
