@@ -1,3 +1,8 @@
+-- --------------------
+-- Création de la base de données (à faire uniquement si nécessaire)
+-- --------------------
+-- CREATE DATABASE restaurant;
+-- \c restaurant
 
 -- --------------------
 -- Table rôles
@@ -71,3 +76,31 @@ CREATE TABLE IF NOT EXISTS reservations (
     nombre_couverts INT NOT NULL,
     statut VARCHAR(20) DEFAULT 'en attente'
 );
+
+-- --------------------
+-- Données initiales
+-- --------------------
+
+-- Insertion des rôles
+INSERT INTO roles (nom)
+VALUES 
+    ('Client'),
+    ('Serveur'),
+    ('Admin')
+ON CONFLICT (nom) DO NOTHING;
+
+-- Insertion d’un restaurant fictif
+INSERT INTO restaurant (nom, adresse, telephone)
+VALUES ('Le petit cochon', '6 rue du petit cochon, Lyon', '0123456789')
+ON CONFLICT DO NOTHING;
+
+-- Insertion des horaires d’ouverture pour ce restaurant (id = 1)
+INSERT INTO ouverture (restaurant_id, jour, heure_ouverture, heure_fermeture)
+VALUES
+    (1, 'Lundi', '12:00', '22:00'),
+    (1, 'Mardi', '12:00', '22:00'),
+    (1, 'Mercredi', '12:00', '22:00'),
+    (1, 'Jeudi', '12:00', '22:00'),
+    (1, 'Vendredi', '12:00', '23:00'),
+    (1, 'Samedi', '12:00', '23:00'),
+    (1, 'Dimanche', '12:00', '21:00');

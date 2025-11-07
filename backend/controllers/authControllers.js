@@ -1,54 +1,64 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const Utilisateur = require("../models/utilisateur");
-
-const JWT_SECRET = process.env.JWT_SECRET || "secret_jwt"; // Utilise une variable d'env
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const Utilisateur = require('../models/utilisateur');
 
 exports.register = async (req, res) => {
-    const { nom, email, password } = req.body;
+  const { nom, email, password, role_id } = req.body;
 
-    if (!nom || !email || !password) {
-        return res.status(400).json({ message: "Tous les champs sont requis" });
+  if (!nom || !email || !password || !role_id) {
+    return res.status(400).json({ message: 'Tous les champs (nom, email, password, role_id) sont requis.' });
+  }
+
+  try {
+    const existingUser = await Utilisateur.findByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà.' });
     }
 
-    try {
-        const existingUser = await Utilisateur.findByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ message: "Email déjà utilisé" });
-        }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await Utilisateur.create(nom, email, hashedPassword, role_id);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await Utilisateur.create({ nom, email, password: hashedPassword });
-
-        res.status(201).json({ message: "Utilisateur créé", user: newUser });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Erreur serveur" , nom, email, password});
-    }
+    res.status(201).json({
+      message: 'Utilisateur créé avec succès',
+      utilisateur: { id: newUser.id, nom: newUser.nom, email: newUser.email, role_id: newUser.role_id },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur', error });
+  }
 };
 
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: "Tous les champs sont requis" });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email et mot de passe requis.' });
+  }
+
+  try {
+    const user = await Utilisateur.findByEmail(email);
+    if (!user) {
+      return res.status(400).json({ message: 'Utilisateur non trouvé.' });
     }
 
-    try {
-        const user = await Utilisateur.findByEmail(email);
-        if (!user) {
-            return res.status(400).json({ message: "Email ou mot de passe incorrect" });
-        }
-
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ message: "Email ou mot de passe incorrect" });
-        }
-
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
-        res.status(200).json({ message: "Connexion réussie", token });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Erreur serveur" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Mot de passe incorrect.' });
     }
+
+    const token = jwt.sign(
+      { id: user.id, role_id: user.role_id },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({
+      message: 'Connexion réussie',
+      token,
+      utilisateur: { id: user.id, nom: user.nom, email: user.email, role_id: user.role_id },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur', error });
+  }
 };
