@@ -134,3 +134,5 @@ flutter run
 # Figma
 
 **Lien du Figma :** https://www.figma.com/proto/qErr2cZOOpFiBMWdq25AzK/app_resto_flutter?node-id=1-1198&p=f&t=Cl74BzZHlSYYIIRX-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A1198&disable-default-keyboard-nav=1&hide-ui=1
+
+**Lien de la Doc API avec SWAGGER :** http://localhost:3000/api-docs
